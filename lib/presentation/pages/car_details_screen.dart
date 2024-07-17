@@ -69,7 +69,9 @@ class CarDetailsScreen extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const MapDetailsScreen()));
+                              builder: (context) => MapDetailsScreen(
+                                    carModel: carModel,
+                                  )));
                     },
                     child: Container(
                       height: 170,

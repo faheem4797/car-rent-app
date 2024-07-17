@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:rent_a_car/data/models/car_model.dart';
 
 class MapDetailsScreen extends StatelessWidget {
-  const MapDetailsScreen({super.key});
+  final CarModel carModel;
+  const MapDetailsScreen({super.key, required this.carModel});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -16,43 +19,182 @@ class MapDetailsScreen extends StatelessWidget {
             },
             icon: const Icon(Icons.arrow_back)),
       ),
-      body: Container(
-        height: double.maxFinite,
-        color: Colors.orange,
-        child: FlutterMap(
-          options: MapOptions(
-            initialCenter: const LatLng(51, 0.09),
-            initialZoom: 13,
-            cameraConstraint: CameraConstraint.contain(
-              bounds: LatLngBounds(
-                const LatLng(-90, -180),
-                const LatLng(90, 180),
-              ),
+      body: Stack(
+        children: [
+          FlutterMap(
+            options: const MapOptions(
+              initialCenter: LatLng(33.6995, 73.0363),
+              initialZoom: 9.2,
             ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.app',
+              ),
+            ],
           ),
-          children: const [
-            // openStreetMapTileLayer,
-            // RichAttributionWidget(
-            //   popupInitialDisplayDuration: const Duration(seconds: 5),
-            //   animationConfig: const ScaleRAWA(),
-            //   showFlutterMapAttribution: false,
-            //   attributions: [
-            //     TextSourceAttribution(
-            //       'OpenStreetMap contributors',
-            //       onTap: () async => launchUrl(
-            //         Uri.parse('https://openstreetmap.org/copyright'),
-            //       ),
-            //     ),
-            //     const TextSourceAttribution(
-            //       'This attribution is the same throughout this app, except '
-            //       'where otherwise specified',
-            //       prependCopyright: false,
-            //     ),
-            //   ],
-            // ),
-          ],
-        ),
+          Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: carDetailsCard(car: carModel))
+        ],
       ),
     );
   }
+}
+
+Widget carDetailsCard({required CarModel car}) {
+  return SizedBox(
+    height: 350,
+    child: Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black38, spreadRadius: 0, blurRadius: 10)
+              ]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              Text(
+                car.model,
+                style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.directions_car,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                    '> ${car.distance} km',
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  const Icon(
+                    Icons.battery_full,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                    car.fuelCapacity.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(20),
+                  topLeft: Radius.circular(20),
+                )),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Features",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                featureIcons(),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '\$${car.pricePerHour}/day',
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black),
+                        child: const Text(
+                          'Book Now',
+                          style: TextStyle(color: Colors.white),
+                        ))
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+            top: 50, right: 20, child: Image.asset('assets/white_car.png'))
+      ],
+    ),
+  );
+}
+
+Widget featureIcons() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      featureIcon(Icons.local_gas_station, 'Diesel', 'Common Rail'),
+      featureIcon(Icons.speed, 'Acceleration', '0 - 100km/s'),
+      featureIcon(Icons.ac_unit, 'Cold', 'Temp Control'),
+    ],
+  );
+}
+
+Widget featureIcon(IconData icon, String title, String subtitle) {
+  return Container(
+    width: 100,
+    height: 100,
+    padding: const EdgeInsets.all(5),
+    decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey, width: 1)),
+    child: Column(
+      children: [
+        Icon(
+          icon,
+          size: 28,
+        ),
+        Text(title),
+        Text(
+          subtitle,
+          style: const TextStyle(color: Colors.grey, fontSize: 10),
+        )
+      ],
+    ),
+  );
 }
